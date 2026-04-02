@@ -40,40 +40,9 @@ public class RbacTenantRegisteredEventHandler {
     @EventListener
     @Transactional
     public void onTenantRegistered(TenantRegisteredEvent event) {
-        log.info("RBAC Module đang khởi tạo Role OWNER cho tenantId={}", event.tenantId());
-
-        // 1. Lấy tất cả quyền hệ thống (được seed từ V1)
-        List<PermissionJpaEntity> allPermissions = permissionRepository.findAll();
-        if (allPermissions.isEmpty()) {
-            log.warn("CẢNH BÁO: Bảng permissions đang trống! Vui lòng kiểm tra Flyway.");
-        }
-
-        // 2. Tạo Role OWNER (isSystem = true)
-        RoleJpaEntity ownerRole = RoleJpaEntity.builder()
-                .tenantId(event.tenantId())
-                .name("OWNER")
-                .description("Chủ cửa hàng (Quản trị viên toàn quyền)")
-                .isSystem(true)
-                .build();
-        ownerRole = roleRepository.save(ownerRole);
-
-        // 3. Gắn tất cả quyền cho Role OWNER
-        UUID roleId = ownerRole.getId();
-        List<RolePermissionJpaEntity> rolePermissions = allPermissions.stream()
-                .map(p -> new RolePermissionJpaEntity(roleId, p.getId()))
-                .collect(Collectors.toList());
-        rolePermissionRepository.saveAll(rolePermissions);
-
-        // 4. Gắn Role OWNER cho User chủ cửa hàng vừa được tạo
-        UserRoleJpaEntity userRole = new UserRoleJpaEntity(
-                event.ownerUserId(), 
-                roleId, 
-                event.ownerUserId(), // tự cấp cho mình
-                LocalDateTime.now() 
-        );
-        userRoleRepository.save(userRole);
-
-        log.info("Khởi tạo thành công Role OWNER (kèm {} quyền) cho userId={} của tenantId={}", 
-                rolePermissions.size(), event.ownerUserId(), event.tenantId());
+        log.info("RBAC Module nhận sự kiện tạo Role OWNER cho tenantId={} (Đã được xử lý ở RegisterTenantCommandHandler)", event.tenantId());
+        // Quá trình tạo Role OWNER và cấp quyền đã được gộp vào RegisterTenantCommandHandler
+        // để có thể trả về JWT AccessToken với đầy đủ Permissions ngay lập tức ngay trong API Đăng ký.
+        // Do đó, EventListener này không cần thực hiện insert Role nữa để tránh lỗi uq_role_name_tenant.
     }
 }

@@ -10,13 +10,13 @@ spring:
   ## ------ JPA & Hibernate ------
   jpa:
     hibernate:
-      ddl-auto: validate          # Flyway quản lý schema, Hibernate chỉ validate
+      ddl-auto: validate # Flyway quản lý schema, Hibernate chỉ validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: false
         globally_quoted_identifiers: false
-    open-in-view: false           # Tắt OSIV — tránh N+1 ẩn
+    open-in-view: false # Tắt OSIV — tránh N+1 ẩn
 
   ## ------ DataSource (PostgreSQL 16) ------
   datasource:
@@ -31,6 +31,15 @@ spring:
       max-lifetime: 1800000
       pool-name: SmartFnbHikariPool
 
+  ## ------ Redis Configuration ------
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      database: 0
+
   ## ------ Flyway Migration ------
   flyway:
     enabled: true
@@ -41,7 +50,7 @@ spring:
   ## ------ Thread Pool (Java 21 Virtual Threads) ------
   threads:
     virtual:
-      enabled: true               # Tomcat dùng Virtual Threads
+      enabled: true # Tomcat dùng Virtual Threads
 
 ## ------ Server ------
 server:
@@ -54,8 +63,8 @@ server:
 ## ------ JWT Configuration ------
 jwt:
   secret: ${JWT_SECRET:SmartFnbSuperSecretKey2026ChangeInProduction!@#$%^&*()}
-  expiration-ms: ${JWT_EXPIRATION_MS:3600000}          # 1 giờ
-  refresh-expiration-ms: ${JWT_REFRESH_MS:604800000}   # 7 ngày
+  expiration-ms: ${JWT_EXPIRATION_MS:3600000} # 1 giờ
+  refresh-expiration-ms: ${JWT_REFRESH_MS:604800000} # 7 ngày
 
 ## ------ Logging ------
 logging:
