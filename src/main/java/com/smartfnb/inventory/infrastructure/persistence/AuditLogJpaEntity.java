@@ -111,4 +111,55 @@ public class AuditLogJpaEntity {
         log.createdAt = Instant.now();
         return log;
     }
+
+    /**
+     * Factory method tạo audit log khi thay đổi phân quyền vai trò.
+     * Bắt buộc ghi theo coding guidelines § 6.3 — thao tác nhạy cảm.
+     *
+     * @param tenantId       UUID tenant
+     * @param userId         UUID người thực hiện thay đổi
+     * @param roleId         UUID vai trò bị thay đổi
+     * @param oldPermissions JSON string danh sách permission cũ
+     * @param newPermissions JSON string danh sách permission mới
+     * @return AuditLogJpaEntity
+     */
+    public static AuditLogJpaEntity forPermissionChange(UUID tenantId, UUID userId,
+                                                         UUID roleId,
+                                                         String oldPermissions,
+                                                         String newPermissions) {
+        AuditLogJpaEntity log = new AuditLogJpaEntity();
+        log.tenantId = tenantId;
+        log.userId = userId;
+        log.action = "PERMISSION_CHANGED";
+        log.targetType = "role";
+        log.targetId = roleId;
+        log.oldValue = oldPermissions;
+        log.newValue = newPermissions;
+        log.createdAt = Instant.now();
+        return log;
+    }
+
+    /**
+     * Factory method tạo audit log khi tạo / xóa staff.
+     *
+     * @param tenantId  UUID tenant
+     * @param userId    UUID người thực hiện
+     * @param staffId   UUID nhân viên bị tác động
+     * @param action    Hành động: STAFF_CREATED | STAFF_DELETED | STAFF_DEACTIVATED
+     * @param detail    Thông tin chi tiết (JSON string)
+     * @return AuditLogJpaEntity
+     */
+    public static AuditLogJpaEntity forStaffAction(UUID tenantId, UUID userId,
+                                                    UUID staffId, String action,
+                                                    String detail) {
+        AuditLogJpaEntity log = new AuditLogJpaEntity();
+        log.tenantId = tenantId;
+        log.userId = userId;
+        log.action = action;
+        log.targetType = "user";
+        log.targetId = staffId;
+        log.newValue = detail;
+        log.createdAt = Instant.now();
+        return log;
+    }
 }

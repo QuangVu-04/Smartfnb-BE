@@ -21,8 +21,8 @@ spring:
   ## ------ DataSource (PostgreSQL 16) ------
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:smartfnb}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASS:postgres}
+    username: ${DB_USER:smartfnb}
+    password: ${DB_PASS:smartfnb123}
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5

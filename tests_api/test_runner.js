@@ -232,8 +232,127 @@ async function runTests() {
             }
         }
 
+        console.log("\n--- BẮT ĐẦU TEST S-15 (STAFF) ---");
+        
+        console.log("20. Tạo Chức vụ (Position)");
+        res = await request('/positions', 'POST', {
+            name: "Quản lý cửa hàng",
+            description: "Quản lý chung chi nhánh"
+        }, currentToken);
+        if (res.status !== 200 && res.status !== 201) throw new Error("Create position failed: " + JSON.stringify(res.data));
+        const positionId = res.data.data;
+        console.log("   ✅ Tạo Chức vụ thành công. ID: " + positionId);
+
+        console.log("21. Lấy danh sách Chức vụ");
+        res = await request('/positions', 'GET', null, currentToken);
+        if (res.status !== 200) throw new Error("Get positions failed");
+        console.log("   ✅ Lấy danh sách Chức vụ thành công.");
+
+        console.log("22. Tạo Nhân sự (Staff)");
+        res = await request('/staff', 'POST', {
+            positionId: positionId,
+            fullName: "Nguyễn Văn Test",
+            email: "stafftest@smartfnb.com",
+            phone: "0999888777",
+            employeeCode: "EMP-001",
+            baseSalary: 10000000,
+            hireDate: "2026-04-06"
+        }, currentToken);
+        if (res.status !== 200 && res.status !== 201) throw new Error("Create staff failed: " + JSON.stringify(res.data));
+        let staffId = res.data.data;
+        console.log("   ✅ Tạo Nhân sự thành công. ID: " + staffId);
+
+        console.log("23. Cập nhật Nhân sự (Staff)");
+        res = await request(`/staff/${staffId}`, 'PUT', {
+            positionId: positionId,
+            fullName: "Nguyễn Văn Test (Updated)",
+            email: "stafftest_upd@smartfnb.com",
+            phone: "0999888777",
+            employeeCode: "EMP-001X",
+            baseSalary: 12000000,
+            hireDate: "2026-04-06",
+            isActive: true
+        }, currentToken);
+        if (res.status !== 200) throw new Error("Update staff failed: " + JSON.stringify(res.data));
+        console.log("   ✅ Cập nhật Nhân sự thành công.");
+
+        console.log("24. Tạo Vai trò (Role)");
+        res = await request('/roles', 'POST', {
+            name: "Thu Ngân Test",
+            description: "Role dành cho thu ngân test"
+        }, currentToken);
+        if (res.status !== 200 && res.status !== 201) throw new Error("Create role failed: " + JSON.stringify(res.data));
+        const roleId = res.data.data;
+        console.log("   ✅ Tạo Role thành công. ID: " + roleId);
+
+        // --- S-16: SHIFT & SESSION ---
+        console.log("\n--- BẮT ĐẦU TEST S-16 (SHIFT) ---");
+
+        console.log("25. Tạo Ca làm việc mẫu (Shift Template)");
+        res = await request('/shift-templates', 'POST', {
+            name: "Ca Sáng Test",
+            startTime: "07:00:00",
+            endTime: "15:00:00",
+            minStaff: 2,
+            maxStaff: 5,
+            color: "#FF5733",
+            active: true
+        }, currentToken);
+        if (res.status !== 200 && res.status !== 201) throw new Error("Create shift template failed: " + JSON.stringify(res.data));
+        const templateId = res.data.data;
+        console.log("   ✅ Tạo Shift Template thành công. ID: " + templateId);
+
+        console.log("26. Đăng ký Ca làm việc (Register Shift)");
+        const jwtPayload = JSON.parse(Buffer.from(currentToken.split('.')[1], 'base64').toString());
+        const currentUserId = jwtPayload.sub;
+        res = await request('/shifts', 'POST', {
+            userId: currentUserId,
+            shiftTemplateId: templateId,
+            date: "2026-04-07"
+        }, currentToken);
+        if (res.status !== 200 && res.status !== 201) throw new Error("Register shift failed: " + JSON.stringify(res.data));
+        const scheduleId = res.data.data;
+        console.log("   ✅ Đăng ký Shift Schedule thành công. ID: " + scheduleId);
+
+        console.log("27. Lấy danh sách Ca của tôi (My Shifts)");
+        res = await request('/shifts/my?startDate=2026-04-07&endDate=2026-04-07', 'GET', null, currentToken);
+        if (res.status !== 200) throw new Error("Get my shifts failed: " + JSON.stringify(res.data));
+        console.log("   ✅ Lấy danh sách ca làm việc cá nhân thành công.");
+
+        console.log("28. Check-IN Ca làm việc");
+        res = await request(`/shifts/${scheduleId}/checkin`, 'POST', {}, currentToken);
+        if (res.status !== 200) throw new Error("Check-in failed: " + JSON.stringify(res.data));
+        console.log("   ✅ Check-In thành công.");
+
+        console.log("29. Check-OUT Ca làm việc");
+        res = await request(`/shifts/${scheduleId}/checkout`, 'POST', {}, currentToken);
+        if (res.status !== 200) throw new Error("Check-out failed: " + JSON.stringify(res.data));
+        console.log("   ✅ Check-Out thành công.");
+
+        console.log("30. Mở Phiên bàn giao POS (Open PosSession)");
+        res = await request('/pos-sessions/open', 'POST', {
+            startingCash: 1000000,
+            shiftScheduleId: scheduleId
+        }, currentToken);
+        if (res.status !== 200 && res.status !== 201) throw new Error("Open POS Session failed: " + JSON.stringify(res.data));
+        const sessionId = res.data.data;
+        console.log("   ✅ Mở POS Session thành công. ID: " + sessionId);
+
+        console.log("31. Lấy POS Session đang Active");
+        res = await request('/pos-sessions/active', 'GET', null, currentToken);
+        if (res.status !== 200) throw new Error("Get Active POS Session failed: " + JSON.stringify(res.data));
+        console.log("   ✅ Lấy Active POS Session thành công.");
+
+        console.log("32. Đóng Phiên Bàn giao POS (Close PosSession)");
+        res = await request(`/pos-sessions/${sessionId}/close`, 'POST', {
+            endingCashActual: 1500000,
+            note: "Đóng két cuối ca"
+        }, currentToken);
+        if (res.status !== 200) throw new Error("Close POS Session failed: " + JSON.stringify(res.data));
+        console.log("   ✅ Đóng POS Session thành công.");
+
         console.log("\n==========================================");
-        console.log("🎉 TẤT CẢ MODULES (S-01 đến S-14) HOẠT ĐỘNG HOÀN HẢO!");
+        console.log("🎉 TẤT CẢ MODULES (S-01 đến S-16) HOẠT ĐỘNG HOÀN HẢO!");
         console.log("==========================================");
 
     } catch (e) {

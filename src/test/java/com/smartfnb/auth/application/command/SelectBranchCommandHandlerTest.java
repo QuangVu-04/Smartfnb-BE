@@ -78,7 +78,7 @@ class SelectBranchCommandHandlerTest {
         
         when(jwtService.generateAccessToken(userId, tenantId, "STAFF", List.of("CREATE_ORDER"), branchId))
                 .thenReturn("new-access-token");
-        when(jwtService.generateRefreshToken(userId, tenantId, "STAFF", List.of("CREATE_ORDER")))
+        when(jwtService.generateRefreshToken(userId))
                 .thenReturn("new-refresh-token");
 
         AuthResponse response = handler.handle(userId, tenantId, command);
